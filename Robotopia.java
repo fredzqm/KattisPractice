@@ -1,4 +1,4 @@
-package Qualifier;
+
 
 import java.util.Scanner;
 

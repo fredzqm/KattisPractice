@@ -1,4 +1,4 @@
-package Qualifier;
+package pass;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -7,7 +7,8 @@ import java.util.Scanner;
 /**
  * https://open.kattis.com/problems/bigtruck
  * 
- * P
+ * 3.7, Dijkstra
+ * 
  * @author zhang
  *
  */
