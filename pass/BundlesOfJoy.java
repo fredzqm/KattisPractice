@@ -1,4 +1,4 @@
-package DryRun1;
+package pass;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,14 +10,15 @@ import java.util.Set;
 /**
  * https://open.kattis.com/problems/bundles
  * 
- * P
+ * 6.0, tree-shape dynamic programming
+ * 
  * @author zhang
  *
  */
 public class BundlesOfJoy {
 	static Scanner in = new Scanner(System.in);
 
-	static class Bundle implements Comparable<Bundle>{
+	static class Bundle implements Comparable<Bundle> {
 		int price;
 		int height;
 		Set<Integer> items;
@@ -45,7 +46,7 @@ public class BundlesOfJoy {
 
 		private Bundle MergeBundle(Bundle o) {
 			for (Integer i : o.items) {
-				if (items.contains(i)){
+				if (items.contains(i)) {
 					o.height = height + 1;
 					addSubBundle(o);
 					return this;
@@ -56,10 +57,10 @@ public class BundlesOfJoy {
 
 		private void addSubBundle(Bundle o) {
 			Bundle merged = null;
-			for (int j = 0 ; j < subBundles.size(); j++){
+			for (int j = 0; j < subBundles.size(); j++) {
 				Bundle oldBundle = subBundles.get(j);
 				merged = oldBundle.MergeBundle(o);
-				if (merged != null){
+				if (merged != null) {
 					subBundles.set(j, merged);
 					break;
 				}

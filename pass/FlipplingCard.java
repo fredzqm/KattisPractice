@@ -1,4 +1,4 @@
-package DryRun1;
+package pass;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,7 +8,8 @@ import java.util.Scanner;
 /**
  * https://open.kattis.com/problems/flippingcards
  * 
- * P
+ * 6.8, graph
+ * 
  * @author zhang
  *
  */

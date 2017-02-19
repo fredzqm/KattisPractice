@@ -1,11 +1,13 @@
-package DryRun1;
+package pass;
+
 import java.util.Arrays;
 import java.util.Scanner;
 
 /**
  * https://open.kattis.com/problems/classy
  * 
- * P
+ * 3.6, Graph, topographic ordering
+ * 
  * @author zhang
  *
  */

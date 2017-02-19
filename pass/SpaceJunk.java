@@ -1,11 +1,12 @@
-package DryRun1;
+package pass;
 
 import java.util.Scanner;
 
 /**
  * https://open.kattis.com/problems/junk
  * 
- * P
+ * 4.3, geometric and solving equation
+ * 
  * @author zhang
  *
  */

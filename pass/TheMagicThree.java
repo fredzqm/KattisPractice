@@ -1,10 +1,10 @@
-package DryRun1;
+package pass;
 import java.util.Scanner;
 
 /**
  * https://open.kattis.com/problems/magical3
  * 
- * P
+ * 5.5, Number theory
  * @author zhang
  *
  */
