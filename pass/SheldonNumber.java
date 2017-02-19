@@ -1,10 +1,7 @@
-package DryRun2;
+package pass;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -12,7 +9,8 @@ import java.util.TreeSet;
 /**
  * https://open.kattis.com/problems/sheldon
  * 
- * P
+ * 5.6, brutal force
+ * 
  * @author zhang
  *
  */

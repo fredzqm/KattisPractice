@@ -1,19 +1,14 @@
-package DryRun2;
 
-import java.lang.management.GarbageCollectorMXBean;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * https://open.kattis.com/problems/textprocessor

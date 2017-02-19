@@ -91,7 +91,7 @@ public class BundlesOfJoy {
 	public static void main(String[] args) {
 		int numOfCase = in.nextInt();
 		for (int tc = 0; tc < numOfCase; tc++) {
-			int numType = in.nextInt();
+			in.nextInt();
 			int numBundle = in.nextInt();
 			List<Bundle> ls = new ArrayList<>();
 			for (int i = 0; i < numBundle; i++) {

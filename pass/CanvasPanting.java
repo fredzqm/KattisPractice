@@ -1,13 +1,13 @@
-package DryRun2;
-import java.lang.reflect.Array;
-import java.util.Arrays;
+package pass;
+
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
 /**
  * https://open.kattis.com/problems/canvas
  * 
- * P
+ * 4.7, greedy algorithm, huffman tree
+ * 
  * @author zhang
  *
  */

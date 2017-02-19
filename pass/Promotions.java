@@ -1,4 +1,4 @@
-package DryRun2;
+package pass;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +11,8 @@ import java.util.Set;
  * 
  * https://open.kattis.com/problems/promotions
  * 
- * P
+ * 5.8, graph theory, topography ordering
+ * 
  * @author zhang
  *
  */

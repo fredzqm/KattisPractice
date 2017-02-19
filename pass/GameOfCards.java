@@ -1,19 +1,16 @@
-package DryRun2;
+package pass;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeSet;
 
 /**
  * https://open.kattis.com/problems/gameofcards
+ * 
+ * 5.8, nimber (Grundy number), game like chess
  * 
  * @author zhang
  *
@@ -35,9 +32,9 @@ public class GameOfCards {
 		int value = 0;
 		for (Pile p : piles)
 			value ^= p.process();
-		if (value == 0){
+		if (value == 0) {
 			System.out.println("Bob will win.");
-		}else{
+		} else {
 			System.out.println("Alice can win.");
 		}
 	}
@@ -88,12 +85,12 @@ public class GameOfCards {
 				if (nimber != -1)
 					return nimber;
 				TreeSet<Integer> ls = new TreeSet<>();
-				for (State s: nextStates){
+				for (State s : nextStates) {
 					ls.add(s.solve());
 				}
 				Iterator<Integer> itr = ls.iterator();
 				nimber = 0;
-				while(itr.hasNext()){
+				while (itr.hasNext()) {
 					if (nimber != itr.next())
 						break;
 					nimber++;
