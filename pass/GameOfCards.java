@@ -1,9 +1,6 @@
 package pass;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Scanner;
 import java.util.TreeSet;
 
@@ -23,15 +20,15 @@ public class GameOfCards {
 		in.hasNext();
 		int P = in.nextInt();
 		K = in.nextInt();
-		List<Pile> piles = new ArrayList<>();
+		int value = 0;
 		for (int pileNum = 0; pileNum < P; pileNum++) {
 			int N = in.nextInt();
-			piles.add(new Pile(N));
+			State state = null;
+			for (int i = 0; i < N; i++) {
+				state = new State(state, in.nextInt());
+			}
+			value ^= state.getNimber();
 		}
-
-		int value = 0;
-		for (Pile p : piles)
-			value ^= p.process();
 		if (value == 0) {
 			System.out.println("Bob will win.");
 		} else {
@@ -39,73 +36,44 @@ public class GameOfCards {
 		}
 	}
 
-	static class Pile {
-		int[] cards;
-		ArrayList<State> states;
+	static class State {
+		State below;
+		int nimber;
+		int number;
 
-		public Pile(int n) {
-			cards = new int[n];
-			states = new ArrayList<>();
-			for (int i = 0; i < n; i++) {
-				cards[i] = in.nextInt();
-				states.add(new State(i));
+		public State(State state, int number) {
+			this.below = state;
+			this.number = number;
+
+			TreeSet<Integer> ls = new TreeSet<>();
+			State x = this;
+			nextI: for (int i = 0; i <= K && x != null; i++) {
+				State y = x;
+				int cardNum = x.number;
+				x = x.below;
+				for (int j = 0; j < cardNum; j++) {
+					if (y == null)
+						continue nextI;
+					y = y.below;
+				}
+				if (y != null)
+					ls.add(y.getNimber());
+				else
+					ls.add(0);
 			}
-			states.add(new State(n));
+			this.nimber = 0;
+			Iterator<Integer> itr = ls.iterator();
+			while (itr.hasNext()) {
+				if (nimber != itr.next())
+					break;
+				nimber++;
+			}
 		}
 
-		public int process() {
-			return states.get(states.size() - 1).solve();
-		}
-
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder("\n");
-			sb.append("cards: " + Arrays.toString(cards));
-			sb.append("  states: " + states);
-			return sb.toString();
-		}
-
-		class State {
-			int left;
-			int nimber = -1;
-			ArrayList<State> nextStates = new ArrayList<>();
-
-			public State(int left) {
-				this.left = left;
-				for (int i = 0; i <= K; i++) {
-					if (left - i < 1)
-						break;
-					int cardValue = cards[left - i - 1];
-					if (left - i - cardValue >= 0)
-						nextStates.add(states.get(left - i - cardValue));
-				}
-			}
-
-			public int solve() {
-				if (nimber != -1)
-					return nimber;
-				TreeSet<Integer> ls = new TreeSet<>();
-				for (State s : nextStates) {
-					ls.add(s.solve());
-				}
-				Iterator<Integer> itr = ls.iterator();
-				nimber = 0;
-				while (itr.hasNext()) {
-					if (nimber != itr.next())
-						break;
-					nimber++;
-				}
-				return nimber;
-			}
-
-			@Override
-			public String toString() {
-				StringBuilder sb = new StringBuilder(left + " (" + nimber + ") =>");
-				for (State s : nextStates)
-					sb.append(" " + s.left);
-				return sb.toString();
-			}
+		public int getNimber() {
+			return nimber;
 		}
 
 	}
+
 }
