@@ -1,8 +1,11 @@
+package pass;
 import java.util.Scanner;
 
 /**
  * https://open.kattis.com/problems/mixedbasearithmetic
- * P
+ * 
+ * 5.4, number theory
+ * 
  * @author zhang
  *
  */
