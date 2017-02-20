@@ -44,8 +44,8 @@ public class TextProcessor {
 		for (int i = 0; i < str.length(); i++) {
 			// addNode
 			char c = str.charAt(i);
-//			for (Node n : nodes)
-//				n.addChar(c);
+			for (Node n : nodes)
+				n.addChar(c);
 			Node added;
 			if (root.containsKey(c)) {
 				Node o = root.get(c);
