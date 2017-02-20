@@ -16,20 +16,30 @@ import java.util.Scanner;
  *
  */
 public class TextProcessor {
-
 	static Scanner in = new Scanner(System.in);
-	static String str;
-	static Map<Character, Node> root;
 
 	public static void main(String[] args) {
 		in.hasNext();
-		str = in.next();
+		String str = in.next();
 		int Q = in.nextInt();
 		int W = in.nextInt();
+		int[] ques = new int[Q];
+		for (int i = 0; i < Q; i++) {
+			ques[i] = in.nextInt();
+		}
 
+		long[] x = solve(str, W, ques);
+
+		for (long l : x)
+			System.out.println(l);
+	}
+
+	public static long[] solve(String str, int W, int[] ques) {
+		int Q = ques.length;
 		ArrayList<Answer> answers = new ArrayList<>();
 		for (int i = 0; i < Q; i++)
-			answers.add(new Answer(in.nextInt() + W - 2, i));
+			answers.add(new Answer(ques[i] + W - 2, i));
+
 		Collections.sort(answers, new Comparator<Answer>() {
 			@Override
 			public int compare(Answer o1, Answer o2) {
@@ -39,25 +49,32 @@ public class TextProcessor {
 
 		Iterator<Answer> itr = answers.iterator();
 		Answer nextToSolve = itr.next();
-		root = new HashMap<>();
+		Map<Character, Node> root = new HashMap<>();
 		Queue<Node> nodes = new LinkedList<>();
-		for (int i = 0; i < str.length(); i++) {
-			// addNode
-			char c = str.charAt(i);
-			for (Node n : nodes)
-				n.addChar(c);
-			Node added;
-			if (root.containsKey(c)) {
-				Node o = root.get(c);
-				added = new Node(o);
-			} else {
-				added = new Node(c);
-			}
-			root.put(c, added);
-			nodes.offer(added);
+		for (int i = 0; i < str.length() + W; i++) {
 			// removeNode
 			if (i >= W) {
-				nodes.poll().remove();
+				Node removed = nodes.poll();
+				if (removed.parent != null) {
+					removed.parent.extend = null;
+				} else {
+					root.remove(removed.s.peek());
+				}
+			}
+			// addNode
+			if (i < str.length()) {
+				char c = str.charAt(i);
+				for (Node n : nodes)
+					n.addChar(c);
+				Node added;
+				if (root.containsKey(c)) {
+					Node o = root.get(c);
+					added = new Node(o);
+				} else {
+					added = new Node(c);
+				}
+				root.put(c, added);
+				nodes.offer(added);
 			}
 			// output result
 			if (i == nextToSolve.end) {
@@ -66,8 +83,13 @@ public class TextProcessor {
 					count += x.length();
 				}
 				nextToSolve.value = count;
-				if (itr.hasNext())
+				while (itr.hasNext()) {
 					nextToSolve = itr.next();
+					if (i == nextToSolve.end)
+						nextToSolve.value = count;
+					else
+						break;
+				}
 			}
 		}
 
@@ -77,8 +99,38 @@ public class TextProcessor {
 				return o1.index - o2.index;
 			}
 		});
-		for (Answer a : answers)
-			System.out.println(a.value);
+
+		long[] ans = new long[Q];
+		for (int i = 0; i < Q; i++)
+			ans[i] = answers.get(i).value;
+		return ans;
+	}
+
+	private static void printTree(Map<Character, Node> root, Queue<Node> nodes, int i) {
+		System.out.println("Index: " + i);
+		for (Character c : root.keySet()) {
+			System.out.println(" " + c + " ->");
+			printNode(root.get(c), 2);
+		}
+		System.out.println(" Nodes");
+		for (Node n : nodes) {
+			printNode(n, 3);
+		}
+	}
+
+	private static void printNode(Node n, int l) {
+		for (int i = 0; i < l; i++)
+			System.out.print(" ");
+		for (Character c : n.s)
+			System.out.print(c);
+		if (n.parent != null) {
+			System.out.print("  parent: ");
+			for (Character c : n.parent.s)
+				System.out.print(c);
+		}
+		System.out.println();
+		if (n.extend != null)
+			printNode(n.extend, l + n.s.size());
 	}
 
 	static class Node {
@@ -87,9 +139,8 @@ public class TextProcessor {
 		Node parent;
 
 		public Node(Node node) {
-			extend = node;
+			s.offer(node.s.poll());
 			node.parent = this;
-			s.offer(extend.s.poll());
 		}
 
 		public Node(char c) {
@@ -101,17 +152,11 @@ public class TextProcessor {
 				if (extend.s.peek() == c) {
 					s.offer(extend.s.poll());
 					return;
+				} else {
+					extend = null;
 				}
-				extend = null;
-			}
-			s.offer(c);
-		}
-
-		public void remove() {
-			if (parent != null) {
-				parent.extend = null;
 			} else {
-				root.remove(s.peek());
+				s.offer(c);
 			}
 		}
 
@@ -125,7 +170,7 @@ public class TextProcessor {
 		}
 	}
 
-	static class Answer {
+	public static class Answer {
 		int end;
 		int index;
 		long value;
