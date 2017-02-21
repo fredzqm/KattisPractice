@@ -50,14 +50,11 @@ public class TextProcessor {
 		Answer nextToSolve = itr.next();
 		Root root = new Root();
 		// LinkedList<Node> nodes = new LinkedList<>();
-		for (int i = 0; i < str.length() + W; i++) {
-			Character c = null;
-			if (i < str.length()) {
-				c = str.charAt(i);
-			}
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
 			long count = root.process(c, Math.min(W, W + str.length() - i));
 
-//			printTree(root, i);
+			// printTree(root, i);
 			// output result
 			if (i == nextToSolve.end) {
 				nextToSolve.value = count;
@@ -67,6 +64,10 @@ public class TextProcessor {
 						nextToSolve.value = count;
 					else
 						break;
+				}
+				if (i + W < nextToSolve.end) {
+					root = new Root();
+					i = nextToSolve.end - W;
 				}
 			}
 		}
