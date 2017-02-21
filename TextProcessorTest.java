@@ -10,31 +10,34 @@ import org.junit.Test;
 
 public class TextProcessorTest {
 
-	 @Test
+	@Test
 	public void test() {
-		runRandomTest(10, 3, 3);
+		runRandomTest(4, 3, 6);
 		runRandomTest(10, 7, 5);
-		runRandomTest(10, 9, 5);
-		runRandomTest(10, 9, 5);
-		runRandomTest(10, 9, 5);
-	}
-
-	// @Test
-	public void test2() {
-		runTest("1153124322251011422692362792219183922393416123837125143216716341639169", 10,
-				new int[] { 2, 14, 18, 10, 20, 29, 23, 34, 7, 19 });
+		runRandomTest(40, 9, 5);
+		runRandomTest(50, 10, 10);
+		runRandomTest(100, 20, 20);
+		runRandomTest(1000, 50, 20);
 	}
 
 	@Test
 	public void test3() {
-		runTest("bcdbbc", 6, new int[] { 1 });
+		runTest("abc", 3, new int[] { 1 });
+		runTest("123", 3, new int[] { 1 });
+		runTest("770", 3, new int[] { 1 });
+		runTest("780", 3, new int[] { 1 });
+	}
+
+	@Test
+	public void test4() {
+		runTest("0000", 3, new int[] { 1, 2 });
 	}
 
 	private void runRandomTest(int length, int W, int Q) {
 		Random r = new Random();
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < length; i++)
-			sb.append(r.nextInt(length));
+			sb.append(r.nextInt(length - W));
 
 		int[] ques = new int[Q];
 		for (int i = 0; i < Q; i++) {

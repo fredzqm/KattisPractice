@@ -11,7 +11,6 @@ import java.util.Scanner;
 /**
  * https://open.kattis.com/problems/textprocessor
  * 
- * 
  * @author zhang
  *
  */
@@ -49,39 +48,18 @@ public class TextProcessor {
 
 		Iterator<Answer> itr = answers.iterator();
 		Answer nextToSolve = itr.next();
-		Map<Character, Node> root = new HashMap<>();
-		Queue<Node> nodes = new LinkedList<>();
+		Root root = new Root();
+		// LinkedList<Node> nodes = new LinkedList<>();
 		for (int i = 0; i < str.length() + W; i++) {
-			// removeNode
-			if (i >= W) {
-				Node removed = nodes.poll();
-				if (removed.parent != null) {
-					removed.parent.extend = null;
-				} else {
-					root.remove(removed.s.peek());
-				}
-			}
-			// addNode
+			Character c = null;
 			if (i < str.length()) {
-				char c = str.charAt(i);
-				for (Node n : nodes)
-					n.addChar(c);
-				Node added;
-				if (root.containsKey(c)) {
-					Node o = root.get(c);
-					added = new Node(o);
-				} else {
-					added = new Node(c);
-				}
-				root.put(c, added);
-				nodes.offer(added);
+				c = str.charAt(i);
 			}
+			long count = root.process(c, Math.min(W, W + str.length() - i));
+
+//			printTree(root, i);
 			// output result
 			if (i == nextToSolve.end) {
-				long count = 0;
-				for (Node x : nodes) {
-					count += x.length();
-				}
 				nextToSolve.value = count;
 				while (itr.hasNext()) {
 					nextToSolve = itr.next();
@@ -106,67 +84,154 @@ public class TextProcessor {
 		return ans;
 	}
 
-	private static void printTree(Map<Character, Node> root, Queue<Node> nodes, int i) {
+	private static void printTree(Root root, int i) {
 		System.out.println("Index: " + i);
-		for (Character c : root.keySet()) {
-			System.out.println(" " + c + " ->");
-			printNode(root.get(c), 2);
-		}
-		System.out.println(" Nodes");
-		for (Node n : nodes) {
-			printNode(n, 3);
-		}
-	}
-
-	private static void printNode(Node n, int l) {
-		for (int i = 0; i < l; i++)
-			System.out.print(" ");
-		for (Character c : n.s)
-			System.out.print(c);
-		if (n.parent != null) {
-			System.out.print("  parent: ");
-			for (Character c : n.parent.s)
-				System.out.print(c);
-		}
-		System.out.println();
-		if (n.extend != null)
-			printNode(n.extend, l + n.s.size());
+		System.out.print(" Trees:\n");
+		System.out.println(root.toString());
 	}
 
 	static class Node {
-		LinkedList<Character> s = new LinkedList<>();
-		Node extend;
-		Node parent;
+		private Queue<Character> str = new LinkedList<>();
+		private Map<Character, Node> map = new HashMap<>(1);
+		private boolean active = true;
 
-		public Node(Node node) {
-			s.offer(node.s.poll());
-			node.parent = this;
-		}
-
-		public Node(char c) {
-			s.offer(c);
-		}
-
-		public void addChar(char c) {
-			if (extend != null) {
-				if (extend.s.peek() == c) {
-					s.offer(extend.s.poll());
-					return;
+		public long process(Character toBeAdd, int level) {
+			level -= 1 + str.size();
+			if (level <= 0)
+				return 0;
+			long ct = 0;
+			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<Character, Node> entry = it.next();
+				Node n = entry.getValue();
+				long c = n.process(toBeAdd, level);
+				if (c == 0) {
+					it.remove();
 				} else {
-					extend = null;
+					ct += c;
 				}
-			} else {
-				s.offer(c);
 			}
+			ct += 1 + str.size();
+			if (active && toBeAdd != null) {
+				if (map.containsKey(toBeAdd)) {
+					Node e = map.get(toBeAdd);
+					if (e.str.size() == 0) {
+						e.setActive(true);
+						setActive(false);
+					} else if (map.size() == 1) {
+						map.remove(toBeAdd);
+						str.add(toBeAdd);
+						map.put(e.str.remove(), e);
+					} else {
+						Node x = new Node();
+						map.put(toBeAdd, x);
+						x.map.put(e.str.remove(), e);
+						setActive(false);
+					}
+				} else {
+					if (map.size() == 0) {
+						str.add(toBeAdd);
+					} else {
+						setActive(false);
+						map.put(toBeAdd, new Node());
+					}
+					ct++;
+				}
+			}
+			if (!active && map.size() == 0)
+				return 0;
+			return ct;
 		}
 
-		public int length() {
-			return s.size();
+		public void setActive(boolean x) {
+			active = x;
 		}
 
 		@Override
 		public String toString() {
-			return s.toString();
+			return "  " + toString("");
+		}
+
+		public String toString(String prefix) {
+			StringBuilder sb = new StringBuilder();
+			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
+			for (Character c : str) {
+				sb.append(c);
+				prefix += " ";
+			}
+			prefix += " ";
+			if (active) {
+				sb.append('*');
+			} else {
+				sb.append(' ');
+			}
+			if (it.hasNext()) {
+				Map.Entry<Character, Node> entry = it.next();
+				sb.append(entry.getKey() + entry.getValue().toString(""));
+				prefix += " ";
+				while (it.hasNext()) {
+					entry = it.next();
+					sb.append("\n" + prefix + entry.getKey() + entry.getValue().toString(prefix));
+				}
+			}
+			return sb.toString();
+		}
+	}
+
+	static class Root {
+		private Map<Character, Node> map = new HashMap<>(1);
+
+		public long process(Character toBeAdd, int level) {
+			if (level <= 0)
+				return 0;
+			long ct = 0;
+			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<Character, Node> entry = it.next();
+				Node n = entry.getValue();
+				long c = n.process(toBeAdd, level);
+				if (c == 0) {
+					it.remove();
+				} else {
+					ct += c;
+				}
+			}
+			if (toBeAdd != null) {
+				if (map.containsKey(toBeAdd)) {
+					Node e = map.get(toBeAdd);
+					if (e.str.size() == 0) {
+						e.setActive(true);
+					} else {
+						Node x = new Node();
+						map.put(toBeAdd, x);
+						x.map.put(e.str.remove(), e);
+					}
+				} else {
+					map.put(toBeAdd, new Node());
+					ct++;
+				}
+			}
+			return ct;
+		}
+
+		@Override
+		public String toString() {
+			return " " + toString("");
+		}
+
+		public String toString(String prefix) {
+			StringBuilder sb = new StringBuilder();
+			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
+			if (it.hasNext()) {
+				Map.Entry<Character, Node> entry = it.next();
+				sb.append(entry.getKey() + entry.getValue().toString(""));
+				prefix += " ";
+				while (it.hasNext()) {
+					entry = it.next();
+					sb.append("\n" + prefix + entry.getKey() + entry.getValue().toString(prefix));
+				}
+			}
+			return sb.toString();
 		}
 	}
 
