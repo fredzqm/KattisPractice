@@ -3,9 +3,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 
 /**
@@ -59,8 +57,7 @@ public class TextProcessor {
 		Root root = new Root();
 		// LinkedList<Node> nodes = new LinkedList<>();
 		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			long count = root.process(c, W);
+			long count = root.process(i);
 
 			// printTree(root, i);
 			// output result
@@ -100,12 +97,18 @@ public class TextProcessor {
 	}
 
 	class Node {
-		private Queue<Character> string = new LinkedList<>();
+		// private Queue<Character> string = new LinkedList<>();
+		private int start, end;
 		private Map<Character, Node> map = new HashMap<>(1);
 		private boolean active = true;
 
-		public long process(Character toBeAdd, int level) {
-			level -= 1 + string.size();
+		public Node() {
+			start = 1;
+			end = 0;
+		}
+
+		public long process(int addIndex, int level) {
+			level -= 1 + size();
 			if (level <= 0)
 				return 0;
 			long ct = 0;
@@ -113,34 +116,43 @@ public class TextProcessor {
 			while (it.hasNext()) {
 				Map.Entry<Character, Node> entry = it.next();
 				Node n = entry.getValue();
-				long c = n.process(toBeAdd, level);
+				long c = n.process(addIndex, level);
 				if (c == 0) {
 					it.remove();
 				} else {
 					ct += c;
 				}
 			}
-			ct += 1 + string.size();
-			if (active && toBeAdd != null) {
+			ct += 1 + size();
+
+			char toBeAdd = str.charAt(addIndex);
+			if (active) {
 				if (map.containsKey(toBeAdd)) {
 					Node e = map.get(toBeAdd);
-					if (e.string.size() == 0) {
+					if (e.size() == 0) {
 						e.setActive(true);
 						setActive(false);
 					} else if (map.size() == 1) {
 						map.remove(toBeAdd);
-						string.add(toBeAdd);
-						map.put(e.string.remove(), e);
+						start = start - end + addIndex - 1;
+						end = addIndex;
+						// string.add(toBeAdd);
+						map.put(str.charAt(e.start), e);
+						e.start++;
+						// map.put(e.string.remove(), e);
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
-						x.map.put(e.string.remove(), e);
+						x.map.put(str.charAt(e.start), e);
+						e.start++;
 						setActive(false);
 					}
 				} else {
-					if (map.size() == 0) {
-						string.add(toBeAdd);
-					} else {
+					if (map.size() == 0) { // leaf
+						start = start - end + addIndex - 1;
+						end = addIndex;
+						// string.add(toBeAdd);
+					} else { // create leaf
 						setActive(false);
 						map.put(toBeAdd, new Node());
 					}
@@ -150,6 +162,10 @@ public class TextProcessor {
 			if (!active && map.size() == 0)
 				return 0;
 			return ct;
+		}
+
+		public int size() {
+			return end - start + 1;
 		}
 
 		public void setActive(boolean x) {
@@ -164,8 +180,8 @@ public class TextProcessor {
 		public String toString(String prefix) {
 			StringBuilder sb = new StringBuilder();
 			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
-			for (Character c : string) {
-				sb.append(c);
+			for (int i = start; i <= end; i++) {
+				sb.append(str.charAt(i));
 				prefix += " ";
 			}
 			prefix += " ";
@@ -190,35 +206,34 @@ public class TextProcessor {
 	class Root {
 		private Map<Character, Node> map = new HashMap<>(1);
 
-		public long process(Character toBeAdd, int level) {
-			if (level <= 0)
-				return 0;
+		public long process(int addIndex) {
 			long ct = 0;
 			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<Character, Node> entry = it.next();
 				Node n = entry.getValue();
-				long c = n.process(toBeAdd, level);
+				long c = n.process(addIndex, W);
 				if (c == 0) {
 					it.remove();
 				} else {
 					ct += c;
 				}
 			}
-			if (toBeAdd != null) {
-				if (map.containsKey(toBeAdd)) {
-					Node e = map.get(toBeAdd);
-					if (e.string.size() == 0) {
-						e.setActive(true);
-					} else {
-						Node x = new Node();
-						map.put(toBeAdd, x);
-						x.map.put(e.string.remove(), e);
-					}
+
+			char toBeAdd = str.charAt(addIndex);
+			if (map.containsKey(toBeAdd)) {
+				Node e = map.get(toBeAdd);
+				if (e.size() == 0) {
+					e.setActive(true);
 				} else {
-					map.put(toBeAdd, new Node());
-					ct++;
+					Node x = new Node();
+					map.put(toBeAdd, x);
+					x.map.put(str.charAt(e.start), e);
+					e.start++;
 				}
+			} else {
+				map.put(toBeAdd, new Node());
+				ct++;
 			}
 			return ct;
 		}

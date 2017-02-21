@@ -23,15 +23,16 @@ public class TextProcessorTest {
 
 	@Test
 	public void test3() {
+		runTest("770", 3, new int[] { 1 });
 		runTest("abc", 3, new int[] { 1 });
 		runTest("123", 3, new int[] { 1 });
-		runTest("770", 3, new int[] { 1 });
 		runTest("780", 3, new int[] { 1 });
 	}
 
 	@Test
 	public void test4() {
 		runTest("0000", 3, new int[] { 1, 2 });
+		runTest("2201220", 7, new int[] { 1 });
 	}
 
 	private void runRandomTest(int length, int W, int Q) {
