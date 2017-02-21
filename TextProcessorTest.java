@@ -54,7 +54,8 @@ public class TextProcessorTest {
 			sb.append(", " + ques[i]);
 		System.out.printf("String: \"%s\"\nW: %d\nques: new int[]{%s}\n\n", str, W, sb);
 
-		long[] found = TextProcessor.solve(str, W, ques);
+		TextProcessor textProcessor = new TextProcessor(str, W);
+		long[] found = textProcessor.solve(ques);
 		for (int qi = 0; qi < ques.length; qi++) {
 			int start = ques[qi] - 1;
 			int end = start + W;

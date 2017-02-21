@@ -16,6 +16,13 @@ import java.util.Scanner;
  */
 public class TextProcessor {
 	static Scanner in = new Scanner(System.in);
+	private String str;
+	private int W;
+
+	public TextProcessor(String str, int W) {
+		this.str = str;
+		this.W = W;
+	}
 
 	public static void main(String[] args) {
 		in.hasNext();
@@ -26,14 +33,15 @@ public class TextProcessor {
 		for (int i = 0; i < Q; i++) {
 			ques[i] = in.nextInt();
 		}
+		TextProcessor textProcessor = new TextProcessor(str, W);
 
-		long[] x = solve(str, W, ques);
+		long[] x = textProcessor.solve(ques);
 
 		for (long l : x)
 			System.out.println(l);
 	}
 
-	public static long[] solve(String str, int W, int[] ques) {
+	public long[] solve(int[] ques) {
 		int Q = ques.length;
 		ArrayList<Answer> answers = new ArrayList<>();
 		for (int i = 0; i < Q; i++)
@@ -52,7 +60,7 @@ public class TextProcessor {
 		// LinkedList<Node> nodes = new LinkedList<>();
 		for (int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);
-			long count = root.process(c, Math.min(W, W + str.length() - i));
+			long count = root.process(c, W);
 
 			// printTree(root, i);
 			// output result
@@ -91,13 +99,13 @@ public class TextProcessor {
 		System.out.println(root.toString());
 	}
 
-	static class Node {
-		private Queue<Character> str = new LinkedList<>();
+	class Node {
+		private Queue<Character> string = new LinkedList<>();
 		private Map<Character, Node> map = new HashMap<>(1);
 		private boolean active = true;
 
 		public long process(Character toBeAdd, int level) {
-			level -= 1 + str.size();
+			level -= 1 + string.size();
 			if (level <= 0)
 				return 0;
 			long ct = 0;
@@ -112,26 +120,26 @@ public class TextProcessor {
 					ct += c;
 				}
 			}
-			ct += 1 + str.size();
+			ct += 1 + string.size();
 			if (active && toBeAdd != null) {
 				if (map.containsKey(toBeAdd)) {
 					Node e = map.get(toBeAdd);
-					if (e.str.size() == 0) {
+					if (e.string.size() == 0) {
 						e.setActive(true);
 						setActive(false);
 					} else if (map.size() == 1) {
 						map.remove(toBeAdd);
-						str.add(toBeAdd);
-						map.put(e.str.remove(), e);
+						string.add(toBeAdd);
+						map.put(e.string.remove(), e);
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
-						x.map.put(e.str.remove(), e);
+						x.map.put(e.string.remove(), e);
 						setActive(false);
 					}
 				} else {
 					if (map.size() == 0) {
-						str.add(toBeAdd);
+						string.add(toBeAdd);
 					} else {
 						setActive(false);
 						map.put(toBeAdd, new Node());
@@ -156,7 +164,7 @@ public class TextProcessor {
 		public String toString(String prefix) {
 			StringBuilder sb = new StringBuilder();
 			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
-			for (Character c : str) {
+			for (Character c : string) {
 				sb.append(c);
 				prefix += " ";
 			}
@@ -179,7 +187,7 @@ public class TextProcessor {
 		}
 	}
 
-	static class Root {
+	class Root {
 		private Map<Character, Node> map = new HashMap<>(1);
 
 		public long process(Character toBeAdd, int level) {
@@ -200,12 +208,12 @@ public class TextProcessor {
 			if (toBeAdd != null) {
 				if (map.containsKey(toBeAdd)) {
 					Node e = map.get(toBeAdd);
-					if (e.str.size() == 0) {
+					if (e.string.size() == 0) {
 						e.setActive(true);
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
-						x.map.put(e.str.remove(), e);
+						x.map.put(e.string.remove(), e);
 					}
 				} else {
 					map.put(toBeAdd, new Node());
