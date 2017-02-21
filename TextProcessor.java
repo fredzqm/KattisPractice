@@ -17,7 +17,7 @@ public class TextProcessor {
 	private String str;
 	private int W;
 	private int addIndex;
-	
+
 	public TextProcessor(String str, int W) {
 		this.str = str;
 		this.W = W;
@@ -97,14 +97,37 @@ public class TextProcessor {
 	}
 
 	class Node {
-		// private Queue<Character> string = new LinkedList<>();
 		private int start, end;
 		private Map<Character, Node> map = new HashMap<>(1);
 		private boolean active = true;
 
 		public Node() {
-			start = 1;
-			end = 0;
+			start = addIndex + 1;
+			end = addIndex;
+		}
+
+		public int getStart() {
+			return start;
+		}
+
+		public void setStart(int v) {
+			start = v;
+		}
+
+		public int getEnd() {
+			return end;
+		}
+
+		public char getStartChar() {
+			return str.charAt(getStart());
+		}
+
+		public int size() {
+			return getEnd() - getStart() + 1;
+		}
+
+		public void setActive(boolean x) {
+			active = x;
 		}
 
 		public long process(int level) {
@@ -134,20 +157,20 @@ public class TextProcessor {
 						setActive(false);
 					} else if (map.size() == 1) {
 						map.remove(toBeAdd);
-						start = start - end + addIndex - 1;
+						setStart(getStart() - getEnd() + addIndex - 1);
 						end = addIndex;
-						map.put(str.charAt(e.start), e);
-						e.start++;
+						map.put(e.getStartChar(), e);
+						e.setStart(e.getStart() + 1);
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
-						x.map.put(str.charAt(e.start), e);
-						e.start++;
+						x.map.put(e.getStartChar(), e);
+						e.setStart(e.getStart() + 1);
 						setActive(false);
 					}
 				} else {
 					if (map.size() == 0) { // leaf
-						start = start - end + addIndex - 1;
+						setStart(getStart() - getEnd() + addIndex - 1);
 						end = addIndex;
 					} else { // create leaf
 						setActive(false);
@@ -161,14 +184,6 @@ public class TextProcessor {
 			return ct;
 		}
 
-		public int size() {
-			return end - start + 1;
-		}
-
-		public void setActive(boolean x) {
-			active = x;
-		}
-
 		@Override
 		public String toString() {
 			return "  " + toString("");
@@ -177,7 +192,7 @@ public class TextProcessor {
 		public String toString(String prefix) {
 			StringBuilder sb = new StringBuilder();
 			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
-			for (int i = start; i <= end; i++) {
+			for (int i = getStart(); i <= getEnd(); i++) {
 				sb.append(str.charAt(i));
 				prefix += " ";
 			}
@@ -225,8 +240,8 @@ public class TextProcessor {
 				} else {
 					Node x = new Node();
 					map.put(toBeAdd, x);
-					x.map.put(str.charAt(e.start), e);
-					e.start++;
+					x.map.put(e.getStartChar(), e);
+					e.setStart(e.getStart() + 1);
 				}
 			} else {
 				map.put(toBeAdd, new Node());
