@@ -16,7 +16,8 @@ public class TextProcessor {
 	static Scanner in = new Scanner(System.in);
 	private String str;
 	private int W;
-
+	private int addIndex;
+	
 	public TextProcessor(String str, int W) {
 		this.str = str;
 		this.W = W;
@@ -56,23 +57,22 @@ public class TextProcessor {
 		Answer nextToSolve = itr.next();
 		Root root = new Root();
 		// LinkedList<Node> nodes = new LinkedList<>();
-		for (int i = 0; i < str.length(); i++) {
-			long count = root.process(i);
+		for (addIndex = 0; addIndex < str.length(); addIndex++) {
+			long count = root.process();
 
 			// printTree(root, i);
-			// output result
-			if (i == nextToSolve.end) {
+			if (addIndex == nextToSolve.end) {
 				nextToSolve.value = count;
 				while (itr.hasNext()) {
 					nextToSolve = itr.next();
-					if (i == nextToSolve.end)
+					if (addIndex == nextToSolve.end)
 						nextToSolve.value = count;
 					else
 						break;
 				}
-				if (i + W < nextToSolve.end) {
+				if (addIndex + W < nextToSolve.end) {
 					root = new Root();
-					i = nextToSolve.end - W;
+					addIndex = nextToSolve.end - W;
 				}
 			}
 		}
@@ -107,7 +107,7 @@ public class TextProcessor {
 			end = 0;
 		}
 
-		public long process(int addIndex, int level) {
+		public long process(int level) {
 			level -= 1 + size();
 			if (level <= 0)
 				return 0;
@@ -116,7 +116,7 @@ public class TextProcessor {
 			while (it.hasNext()) {
 				Map.Entry<Character, Node> entry = it.next();
 				Node n = entry.getValue();
-				long c = n.process(addIndex, level);
+				long c = n.process(level);
 				if (c == 0) {
 					it.remove();
 				} else {
@@ -136,10 +136,8 @@ public class TextProcessor {
 						map.remove(toBeAdd);
 						start = start - end + addIndex - 1;
 						end = addIndex;
-						// string.add(toBeAdd);
 						map.put(str.charAt(e.start), e);
 						e.start++;
-						// map.put(e.string.remove(), e);
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
@@ -151,7 +149,6 @@ public class TextProcessor {
 					if (map.size() == 0) { // leaf
 						start = start - end + addIndex - 1;
 						end = addIndex;
-						// string.add(toBeAdd);
 					} else { // create leaf
 						setActive(false);
 						map.put(toBeAdd, new Node());
@@ -206,13 +203,13 @@ public class TextProcessor {
 	class Root {
 		private Map<Character, Node> map = new HashMap<>(1);
 
-		public long process(int addIndex) {
+		public long process() {
 			long ct = 0;
 			Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<Character, Node> entry = it.next();
 				Node n = entry.getValue();
-				long c = n.process(addIndex, W);
+				long c = n.process(W);
 				if (c == 0) {
 					it.remove();
 				} else {
