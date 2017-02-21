@@ -111,11 +111,17 @@ public class TextProcessor {
 		}
 
 		public void setStart(int v) {
+			if (start != v)
+				start = v;
 			start = v;
 		}
 
 		public int getEnd() {
 			return end;
+		}
+
+		public void incrementStart() {
+			start++;
 		}
 
 		public char getStartChar() {
@@ -160,12 +166,12 @@ public class TextProcessor {
 						setStart(getStart() - getEnd() + addIndex - 1);
 						end = addIndex;
 						map.put(e.getStartChar(), e);
-						e.setStart(e.getStart() + 1);
+						e.incrementStart();
 					} else {
 						Node x = new Node();
 						map.put(toBeAdd, x);
 						x.map.put(e.getStartChar(), e);
-						e.setStart(e.getStart() + 1);
+						e.incrementStart();
 						setActive(false);
 					}
 				} else {
@@ -241,7 +247,7 @@ public class TextProcessor {
 					Node x = new Node();
 					map.put(toBeAdd, x);
 					x.map.put(e.getStartChar(), e);
-					e.setStart(e.getStart() + 1);
+					e.incrementStart();
 				}
 			} else {
 				map.put(toBeAdd, new Node());
