@@ -52,6 +52,7 @@ public class TextProcessor {
 		while (last < str.length()) {
 			// remove
 			if (last >= W) {
+				root.active = true;
 				Node n = acitveNodes.remove();
 				count -= n.removeAndGetLength();
 				leafCount--;
@@ -109,6 +110,8 @@ public class TextProcessor {
 	}
 
 	class Node {
+		private boolean active = true;
+		private Node parent;
 		private int start;
 		private Map<Character, Node> map;
 
@@ -124,7 +127,8 @@ public class TextProcessor {
 		 * 
 		 * @param start
 		 */
-		public Node(int start) {
+		public Node(Node parent, int start) {
+			this.parent = parent;
 			this.start = start;
 		}
 
@@ -134,29 +138,37 @@ public class TextProcessor {
 		 * @param start
 		 * @param node
 		 */
-		public Node(int start, Node node) {
+		public Node(Node parent, int start, Node node) {
 			this.start = start;
 			map = new HashMap<>();
 			map.put(node.getStartChar(), node);
+			node.parent = this;
 		}
 
 		public long removeAndGetLength() {
 			int len = last - start;
+			parent.map.remove(getStartChar());
+			if (!parent.active && parent.map.size() == 0) {
+				len += parent.removeAndGetLength();
+			}
 			return len;
 		}
 
 		public Node advance() {
 			char toBeAdd = str.charAt(last);
+			this.active = false;
 			if (map.containsKey(toBeAdd)) {
 				Node e = map.get(toBeAdd);
 				if (e.isLeaf()) {
 					e.start++;
-					e = new Node(e.start - 1, e);
+					e = new Node(this, e.start - 1, e);
+				} else {
+					e.active = true;
 				}
 				map.put(toBeAdd, e);
 				return e;
 			} else {
-				Node n = new Node(last);
+				Node n = new Node(this, last);
 				map.put(toBeAdd, n);
 				return n;
 			}
