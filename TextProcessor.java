@@ -1,15 +1,18 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 /**
  * https://open.kattis.com/problems/textprocessor
+ * 
+ * https://gist.github.com/makagonov/22ab3675e3fc0031314e8535ffcbee2c
+ * http://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english
  * 
  * @author zhang
  *
@@ -75,7 +78,7 @@ public class TextProcessor {
 			if (n.isLeaf())
 				leafCount++;
 			count += leafCount;
-//			System.out.println(this);
+			// System.out.println(this);
 			if (last == nextToSolve.end) {
 				nextToSolve.value = count;
 				while (itr.hasNext()) {
@@ -117,7 +120,7 @@ public class TextProcessor {
 		 * create a root
 		 */
 		public Node() {
-			map = new HashMap<>();
+			map = new TreeMap<>();
 		}
 
 		/**
@@ -138,7 +141,7 @@ public class TextProcessor {
 		 */
 		public Node(Node parent, int start, Node node) {
 			this(parent, start);
-			map = new HashMap<>();
+			map = new TreeMap<>();
 			map.put(node.getStartChar(), node);
 			node.parent = this;
 		}
