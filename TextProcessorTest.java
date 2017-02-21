@@ -14,6 +14,9 @@ public class TextProcessorTest {
 	public void test() {
 		runRandomTest(4, 3, 6);
 		runRandomTest(10, 7, 5);
+		runRandomTest(10, 7, 5);
+		runRandomTest(10, 7, 5);
+		runRandomTest(10, 7, 5);
 		runRandomTest(40, 9, 5);
 		runRandomTest(50, 10, 10);
 		runRandomTest(100, 20, 20);
@@ -33,6 +36,14 @@ public class TextProcessorTest {
 	public void test4() {
 		runTest("0000", 3, new int[] { 1, 2 });
 		runTest("2201220", 7, new int[] { 1 });
+		runTest("2001001", 7, new int[] { 1 });
+		runTest("1110222", 7, new int[] { 1 });
+	}
+
+	@Test
+	public void test5() {
+		runTest("0012012", 7, new int[] { 1 });
+		runTest("0000120120", 7, new int[] { 1, 3 });
 	}
 
 	private void runRandomTest(int length, int W, int Q) {

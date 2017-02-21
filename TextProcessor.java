@@ -21,6 +21,7 @@ public class TextProcessor {
 	private int last;
 	private Node root;
 	private LinkedList<Node> acitveNodes;
+	private long count, leafCount;
 
 	public TextProcessor(String str, int W) {
 		this.str = str;
@@ -47,12 +48,11 @@ public class TextProcessor {
 		acitveNodes = new LinkedList<>();
 		last = 0;
 		root = new Node();
-		long count = 0;
-		long leafCount = 0;
+		count = 0;
+		leafCount = 0;
 		while (last < str.length()) {
 			// remove
 			if (last >= W) {
-				root.active = true;
 				Node n = acitveNodes.remove();
 				count -= n.removeAndGetLength();
 				leafCount--;
@@ -70,11 +70,12 @@ public class TextProcessor {
 			}
 			// add new node from root
 			Node n = root.advance();
+			root.active = true;
 			acitveNodes.add(n);
 			if (n.isLeaf())
 				leafCount++;
 			count += leafCount;
-			System.out.println(this);
+//			System.out.println(this);
 			if (last == nextToSolve.end) {
 				nextToSolve.value = count;
 				while (itr.hasNext()) {
@@ -103,10 +104,7 @@ public class TextProcessor {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Index: " + last + "\n");
-		sb.append("Trees: \n" + root.toString());
-		return sb.toString();
+		return String.format("Index: %d\ncount: %d\nleafCount: %d\nTrees:%s ", last, count, leafCount, root);
 	}
 
 	class Node {
@@ -139,14 +137,17 @@ public class TextProcessor {
 		 * @param node
 		 */
 		public Node(Node parent, int start, Node node) {
-			this.start = start;
+			this(parent, start);
 			map = new HashMap<>();
 			map.put(node.getStartChar(), node);
 			node.parent = this;
 		}
 
 		public long removeAndGetLength() {
-			int len = last - start;
+			long len = 1;
+			if (isLeaf()) {
+				len = last - start;
+			}
 			parent.map.remove(getStartChar());
 			if (!parent.active && parent.map.size() == 0) {
 				len += parent.removeAndGetLength();
@@ -184,27 +185,24 @@ public class TextProcessor {
 
 		@Override
 		public String toString() {
-			return "  " + toString("");
+			return toString("");
 		}
 
 		public String toString(String prefix) {
-			StringBuilder sb = new StringBuilder();
-			if (!isLeaf()) {
+			if (isLeaf())
+				return "\n" + prefix + str.substring(start, last + 1) + "*";
+			StringBuilder sb = new StringBuilder("\n" + prefix);
+			if (parent != null) {
 				sb.append(getStartChar());
-				Iterator<Map.Entry<Character, Node>> it = map.entrySet().iterator();
-				if (it.hasNext()) {
-					Map.Entry<Character, Node> entry = it.next();
-					sb.append(" " + entry.getValue().toString(""));
-					prefix += "  ";
-					while (it.hasNext()) {
-						entry = it.next();
-						sb.append("\n" + prefix + entry.getValue().toString(prefix));
-					}
-				}
-			} else {
-				for (int i = start; i <= last; i++) {
-					sb.append(str.charAt(i));
-				}
+				prefix += ' ';
+			}
+			if (active)
+				sb.append('*');
+			else
+				sb.append(' ');
+			prefix += " ";
+			for (Node n : map.values()) {
+				sb.append(n.toString(prefix));
 			}
 			return sb.toString();
 		}
@@ -219,6 +217,7 @@ public class TextProcessor {
 			this.end = end;
 			this.index = i;
 		}
+
 	}
 
 	public static void main(String[] args) {
