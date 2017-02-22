@@ -23,7 +23,6 @@ public class TextProcessor {
 	private final int W;
 	private int last;
 	private Node root;
-	private LinkedList<Node> acitveNodes;
 	private long count, leafCount;
 
 	public TextProcessor(String str, int W) {
@@ -48,7 +47,8 @@ public class TextProcessor {
 		Answer nextToSolve = itr.next();
 
 		// initialize
-		acitveNodes = new LinkedList<>();
+		LinkedList<Node> leaves = new LinkedList<>();
+		LinkedList<Node> interiors = new LinkedList<>();
 		last = 0;
 		root = new Node();
 		count = 0;
@@ -56,27 +56,32 @@ public class TextProcessor {
 		while (last < str.length()) {
 			// remove
 			if (last >= W) {
-				Node n = acitveNodes.remove();
+				Node n = leaves.remove();
 				count -= n.removeAndGetLength();
 				leafCount--;
 			}
 			// update interior nodes
-			ListIterator<Node> nitr = acitveNodes.listIterator();
+			ListIterator<Node> nitr = interiors.listIterator();
 			while (nitr.hasNext()) {
 				Node n = nitr.next();
-				if (!n.isLeaf()) {
-					n = n.advance();
+				n = n.advance();
+				if (n.isLeaf()) {
+					nitr.remove();
+					leaves.add(n);
+					leafCount++;
+				} else {
 					nitr.set(n);
-					if (n.isLeaf())
-						leafCount++;
 				}
 			}
 			// add new node from root
 			Node n = root.advance();
 			root.active = true;
-			acitveNodes.add(n);
-			if (n.isLeaf())
+			if (n.isLeaf()) {
+				leaves.add(n);
 				leafCount++;
+			} else
+				interiors.add(n);
+			// update count
 			count += leafCount;
 			// System.out.println(this);
 			if (last == nextToSolve.end) {
