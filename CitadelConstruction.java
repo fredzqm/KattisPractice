@@ -41,24 +41,37 @@ public class CitadelConstruction {
 				ConvexHull.ConvexIterator b = convex.getConvexIteratorAt(1);
 				ConvexHull.ConvexIterator c = convex.getConvexIteratorAt(2);
 				ConvexHull.ConvexIterator d = convex.getConvexIteratorAt(3);
-				boolean changed = true;
-				int x = 0;
-				while (changed) {
-					changed = false;
-//					System.out.println("" + (x++) + " "+changed+" 1\n" + a + "\n" + b + "\n" + c + "\n" + d);
-					changed = changed || findMax(c.get(), d, a.get());
-//					System.out.println("" + (x++) + " "+changed+" 2\n" + a + "\n" + b + "\n" + c + "\n" + d);
-					changed = changed || findMax(d.get(), a, b.get());
-//					System.out.println("" + (x++) + " "+changed+" 3\n" + a + "\n" + b + "\n" + c + "\n" + d);
-					changed = changed || findMax(a.get(), b, c.get());
-//					System.out.println("" + (x++) + " "+changed+" 4\n" + a + "\n" + b + "\n" + c + "\n" + d);
-					changed = changed || findMax(b.get(), c, d.get());
-//					System.out.println("" + (x++) + " " + changed + " 5\n" + a + "\n" + b + "\n" + c + "\n" + d);
+				int maxDoubleArea = 0;
+				for (int x = 0; x < 16; x++) {
+					maxDoubleArea = Math.max(maxDoubleArea, findEquilibrium(a, b, c, d, x));
 				}
-				int maxDoubleArea = doubleArea(a.get(), b.get(), c.get()) + doubleArea(c.get(), d.get(), a.get());
 				printOuput(maxDoubleArea);
 			}
 		}
+	}
+
+	private static int findEquilibrium(ConvexHull.ConvexIterator a, ConvexHull.ConvexIterator b,
+			ConvexHull.ConvexIterator c, ConvexHull.ConvexIterator d, int choice) {
+		boolean changed = true;
+		while (changed) {
+			changed = false;
+			// System.out.println("" + (x++) + " "+changed+" 1\n" + a +
+			// "\n" + b + "\n" + c + "\n" + d);
+			changed = changed || findMax(c.get(), d, a.get(), (choice & 0x1) == 0);
+			// System.out.println("" + (x++) + " "+changed+" 2\n" + a +
+			// "\n" + b + "\n" + c + "\n" + d);
+			changed = changed || findMax(d.get(), a, b.get(), (choice & 0x2) == 0);
+			// System.out.println("" + (x++) + " "+changed+" 3\n" + a +
+			// "\n" + b + "\n" + c + "\n" + d);
+			changed = changed || findMax(a.get(), b, c.get(), (choice & 0x4) == 0);
+			// System.out.println("" + (x++) + " "+changed+" 4\n" + a +
+			// "\n" + b + "\n" + c + "\n" + d);
+			changed = changed || findMax(b.get(), c, d.get(), (choice & 0x8) == 0);
+			// System.out.println("" + (x++) + " " + changed + " 5\n" +
+			// a + "\n" + b + "\n" + c + "\n" + d);
+		}
+		int maxDoubleArea = doubleArea(a.get(), b.get(), c.get()) + doubleArea(c.get(), d.get(), a.get());
+		return maxDoubleArea;
 	}
 
 	private static void printOuput(int doubleArea) {
@@ -68,7 +81,7 @@ public class CitadelConstruction {
 			System.out.println(doubleArea / 2 + ".5");
 	}
 
-	private static boolean findMax(Point a, ConvexHull.ConvexIterator itr, Point b) {
+	private static boolean findMax(Point a, ConvexHull.ConvexIterator itr, Point b, boolean preferFirst) {
 		int area = doubleArea(a, itr.get(), b);
 		itr.previous();
 		int preArea = doubleArea(a, itr.get(), b);
@@ -79,10 +92,15 @@ public class CitadelConstruction {
 		if (area > preArea && area > nextArea) {
 			return false;
 		} else if (area > preArea && area == nextArea) {
+			if (preferFirst)
+				return false;
 			itr.next();
 			return true;
 		} else if (area == preArea && area > nextArea) {
-			return false;
+			if (!preferFirst)
+				return false;
+			itr.previous();
+			return true;
 		} else if (preArea > area) {
 			while (true) {
 				itr.previous();
@@ -90,7 +108,9 @@ public class CitadelConstruction {
 				if (area2 < area) {
 					itr.next();
 					break;
-				} else if (area2 == area) {
+				} else if (area == area2) {
+					if (!preferFirst)
+						itr.next();
 					break;
 				}
 				area = area2;
@@ -101,6 +121,10 @@ public class CitadelConstruction {
 				int area2 = doubleArea(a, itr.get(), b);
 				if (area2 <= area) {
 					itr.previous();
+					break;
+				} else if (area == area2) {
+					if (preferFirst)
+						itr.previous();
 					break;
 				}
 				area = area2;
