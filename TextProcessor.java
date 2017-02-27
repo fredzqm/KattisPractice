@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.TreeMap;
 
@@ -21,9 +22,6 @@ public class TextProcessor {
 	static Scanner in = new Scanner(System.in);
 	private final String str;
 	private final int W;
-	private int last;
-	private Node root;
-	private long count, leafCount;
 
 	public TextProcessor(String str, int W) {
 		this.str = str;
@@ -47,54 +45,23 @@ public class TextProcessor {
 		Answer nextToSolve = itr.next();
 
 		// initialize
-		LinkedList<Node> leaves = new LinkedList<>();
-		LinkedList<Node> interiors = new LinkedList<>();
-		last = 0;
-		root = new Node();
-		count = 0;
-		leafCount = 0;
-		while (last < str.length()) {
+		SuffixTree tree = new SuffixTree();
+		for (int i = 0; i < str.length(); i++) {
 			// remove
-			if (last >= W) {
-				Node n = leaves.remove();
-				count -= n.removeAndGetLength();
-				leafCount--;
+			if (i >= W) {
+				tree.removeFirstChar();
 			}
-			// update interior nodes
-			ListIterator<Node> nitr = interiors.listIterator();
-			while (nitr.hasNext()) {
-				Node n = nitr.next();
-				n = n.advance();
-				if (n.isLeaf()) {
-					nitr.remove();
-					leaves.add(n);
-					leafCount++;
-				} else {
-					nitr.set(n);
-				}
-			}
-			// add new node from root
-			Node n = root.advance();
-			root.active = true;
-			if (n.isLeaf()) {
-				leaves.add(n);
-				leafCount++;
-			} else
-				interiors.add(n);
-			// update count
-			count += leafCount;
-			// System.out.println(this);
-			if (last == nextToSolve.end) {
-				nextToSolve.value = count;
+			tree.addChar(str.charAt(i));
+			if (i == nextToSolve.end) {
+				nextToSolve.value = tree.getCount();
 				while (itr.hasNext()) {
 					nextToSolve = itr.next();
-					if (last == nextToSolve.end)
-						nextToSolve.value = count;
+					if (i == nextToSolve.end)
+						nextToSolve.value = tree.getCount();
 					else
 						break;
 				}
 			}
-			last++;
 		}
 
 		Collections.sort(answers, new Comparator<Answer>() {
@@ -108,112 +75,6 @@ public class TextProcessor {
 		for (int i = 0; i < Q; i++)
 			ans[i] = answers.get(i).value;
 		return ans;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("Index: %d\ncount: %d\nleafCount: %d\nTrees:%s ", last, count, leafCount, root);
-	}
-
-	class Node {
-		private boolean active = true;
-		private Node parent;
-		private int start;
-		private Map<Character, Node> map;
-
-		/**
-		 * create a root
-		 */
-		public Node() {
-			map = new TreeMap<>();
-		}
-
-		/**
-		 * create a leaf
-		 * 
-		 * @param start
-		 */
-		public Node(Node parent, int start) {
-			this.parent = parent;
-			this.start = start;
-		}
-
-		/**
-		 * create an interior node
-		 * 
-		 * @param start
-		 * @param node
-		 */
-		public Node(Node parent, int start, Node node) {
-			this(parent, start);
-			map = new TreeMap<>();
-			map.put(node.getStartChar(), node);
-			node.parent = this;
-		}
-
-		public long removeAndGetLength() {
-			long len = 1;
-			if (isLeaf()) {
-				len = last - start;
-			}
-			parent.map.remove(getStartChar());
-			if (!parent.active && parent.map.size() == 0) {
-				len += parent.removeAndGetLength();
-			}
-			return len;
-		}
-
-		public Node advance() {
-			char toBeAdd = str.charAt(last);
-			this.active = false;
-			if (map.containsKey(toBeAdd)) {
-				Node e = map.get(toBeAdd);
-				if (e.isLeaf()) {
-					e.start++;
-					e = new Node(this, e.start - 1, e);
-				} else {
-					e.active = true;
-				}
-				map.put(toBeAdd, e);
-				return e;
-			} else {
-				Node n = new Node(this, last);
-				map.put(toBeAdd, n);
-				return n;
-			}
-		}
-
-		public boolean isLeaf() {
-			return map == null;
-		}
-
-		public char getStartChar() {
-			return str.charAt(start);
-		}
-
-		@Override
-		public String toString() {
-			return toString("");
-		}
-
-		public String toString(String prefix) {
-			if (isLeaf())
-				return "\n" + prefix + str.substring(start, last + 1) + "*";
-			StringBuilder sb = new StringBuilder("\n" + prefix);
-			if (parent != null) {
-				sb.append(getStartChar());
-				prefix += ' ';
-			}
-			if (active)
-				sb.append('*');
-			else
-				sb.append(' ');
-			prefix += " ";
-			for (Node n : map.values()) {
-				sb.append(n.toString(prefix));
-			}
-			return sb.toString();
-		}
 	}
 
 	public static class Answer {
@@ -244,4 +105,284 @@ public class TextProcessor {
 		for (long l : x)
 			System.out.println(l);
 	}
+
+	/**
+	 * https://open.kattis.com/problems/textprocessor
+	 * 
+	 * https://gist.github.com/makagonov/22ab3675e3fc0031314e8535ffcbee2c
+	 * http://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english
+	 * 
+	 * @author zhang
+	 *
+	 */
+	public static class SuffixTree {
+		// basic string representation
+		private final StringBuilder str;
+		private int offset, first;
+
+		// suffix tree representation
+		final Node root, preRoot;
+		private Node activeNode;
+		private long count;
+		private Queue<Node> leaves = new LinkedList<>();
+
+		public SuffixTree() {
+			this.str = new StringBuilder();
+			this.offset = 0;
+			this.first = 0;
+			this.preRoot = new Node(null, Integer.MAX_VALUE);
+			this.preRoot.map = Collections.emptyMap();
+			this.root = new Node(preRoot, Integer.MAX_VALUE);
+			this.root.map = new TreeMap<>();
+			this.root.setLink(preRoot);
+			this.activeNode = root;
+			this.count = 0;
+		}
+
+		public int getFirst() {
+			return first;
+		}
+
+		public int getLast() {
+			return first + str.length() - offset - 1;
+		}
+
+		public int length() {
+			return str.length() - offset;
+		}
+
+		public long getCount() {
+			return count;
+		}
+
+		public char charAt(int index) {
+			return str.charAt(index - first + offset);
+		}
+
+		public void addChar(char c) {
+			str.append(c);
+			Node match = activeNode.getNextNode(c);
+			if (match == null) {
+				Node lastcreatedLeaf = activeNode.createLeaf(c);
+				leaves.add(lastcreatedLeaf);
+				while (true) {
+					activeNode = activeNode.getLink();
+					match = activeNode.getNextNode(c);
+					if (match != null) {
+						lastcreatedLeaf.setLink(match);
+						break;
+					}
+					Node createdLeaf = activeNode.createLeaf(c);
+					leaves.add(createdLeaf);
+					lastcreatedLeaf.setLink(createdLeaf);
+					lastcreatedLeaf = createdLeaf;
+				}
+			}
+			activeNode = match;
+			Node lastcreatedLeaf = match.breakFirst();
+			if (lastcreatedLeaf != null) {
+				// a new leaf is created when creating interior node
+				c = lastcreatedLeaf.getStartChar();
+				while (true) {
+					match = match.getLink();
+					if (!match.isLeaf()) {
+						Node link = match.getNextNode(c);
+						assert link != null;
+						lastcreatedLeaf.setLink(link);
+						break;
+					}
+					Node link = match.breakFirst();
+					assert link.getStartChar() == c;
+					lastcreatedLeaf.setLink(link);
+					lastcreatedLeaf = link;
+				}
+			}
+			count += leaves.size();
+		}
+
+		public void removeFirstChar() {
+			Node removed = leaves.poll();
+			count -= removed.remove();
+		}
+
+		public void addString(String str) {
+			for (int i = 0; i < str.length(); i++) {
+				addChar(str.charAt(i));
+			}
+		}
+
+		public void removeFirstNChar(int n) {
+			for (int i = 0; i < n; i++) {
+				removeFirstChar();
+			}
+		}
+
+		public boolean contains(String substr) {
+			TreeTraverser itr = traverser();
+			for (int i = 0; i < substr.length(); i++) {
+				char c = substr.charAt(i);
+				if (!itr.accept(c))
+					return false;
+			}
+			return true;
+		}
+
+		public TreeTraverser traverser() {
+			return new TreeTraverser(root);
+		}
+
+		@Override
+		public String toString() {
+			return str.substring(offset + getFirst());
+		}
+
+		private class Node {
+			private Node parent, link, longest;
+			private int start;
+			private Map<Character, Node> map;
+
+			/**
+			 * create a root
+			 */
+			public Node(Node parent, int start) {
+				this.parent = parent;
+				this.start = start;
+			}
+
+			public Node getLink() {
+				return link;
+			}
+
+			public void setLink(Node link) {
+				this.link = link;
+			}
+
+			public int getStart() {
+				return start;
+			}
+
+			public boolean isLeaf() {
+				return map == null;
+			}
+
+			public Node getNextNode(char c) {
+				if (this == preRoot)
+					return root;
+				return map.get(c);
+			}
+
+			public char getStartChar() {
+				return str.charAt(start);
+			}
+
+			public Node createLeaf(char toBeAdd) {
+				this.start = getLast() - 1;
+				Node leaf = new Node(this, getLast());
+				assert leaf.getStartChar() == toBeAdd;
+				map.put(leaf.getStartChar(), leaf);
+				return leaf;
+			}
+
+			public Node breakFirst() {
+				Node oldLeaf = null;
+				if (isLeaf()) {
+					oldLeaf = new Node(this, start + 1);
+					this.map = new TreeMap<>(); // convert this to Interior node
+					this.map.put(oldLeaf.getStartChar(), oldLeaf);
+					this.longest = oldLeaf;
+				}
+				this.start = getLast();
+				return oldLeaf;
+			}
+
+			public long remove() {
+				if (isLeaf()) {
+					int len = getLast() - getStart();
+					Node p = this, c;
+					do {
+						len++;
+						c = p;
+						p = c.parent;
+						p.map.remove(c.getStartChar());
+					} while (p.map.size() == 0 && p.getStart() + 1 == c.getStart());
+					return len;
+				} else {
+					Node l = this;
+					while (!l.longest.isLeaf())
+						l = l.longest;
+					l.map.remove(l.longest.getStartChar());
+					return getLast() - l.longest.getStart() + 1;
+				}
+			}
+
+			@Override
+			public String toString() {
+				return toString("");
+			}
+
+			public String toString(String prefix) {
+				StringBuilder sb = new StringBuilder("\n" + prefix);
+				if (isLeaf()) {
+					for (int i = getStart(); i <= getLast(); i++)
+						sb.append(charAt(i));
+				} else {
+					if (this != root) {
+						sb.append(getStartChar());
+						prefix += ' ';
+					}
+					for (Node n : map.values()) {
+						sb.append(prefix + n.toString(prefix));
+					}
+				}
+				return sb.toString();
+			}
+		}
+
+		public class TreeTraverser {
+			private Node curNode;
+			private int index;
+
+			public TreeTraverser(Node node) {
+				this.curNode = node;
+			}
+
+			public boolean accept(char c) {
+				if (curNode.isLeaf()) {
+					if (index < length() && c == charAt(index + 1)) {
+						index++;
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					Node next = curNode.getNextNode(c);
+					if (next == null) {
+						return false;
+					} else {
+						curNode = next;
+						index = curNode.getStart();
+						assert charAt(index) == c;
+						return true;
+					}
+				}
+			}
+
+			public void undoLast() {
+				if (curNode.isLeaf()) {
+					if (index == curNode.start) {
+						curNode = curNode.parent;
+					} else {
+						index--;
+					}
+				} else {
+					if (curNode == root)
+						throw new RuntimeException("Cannot undoLastChar, because it is already an empty string");
+					curNode = curNode.parent;
+				}
+			}
+
+		}
+
+	}
+
 }
