@@ -62,7 +62,7 @@ void multigram() {
 	cout << -1 << endl;
 }
 
-int main(int argc, char** argv) {
-	multigram();
-}
+//int main(int argc, char** argv) {
+//	multigram();
+//}
 
