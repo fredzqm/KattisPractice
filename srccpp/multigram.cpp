@@ -5,6 +5,11 @@
 
 using namespace std;
 
+/**
+ * https://open.kattis.com/problems/multigram
+ *
+ * string processing
+ */
 bool checkSeg(int seg, const string& str, const int* const next,
 		const int len) {
 	unordered_set<char> checked;
@@ -29,14 +34,6 @@ bool checkSeg(int seg, const string& str, const int* const next,
 		checked.insert(c);
 	}
 	return true;
-}
-
-template<class K, class V>
-std::ostream& std::operator<<(ostream &strm, const unordered_map<K, V> &a) {
-	for (auto it = a.begin(); it != a.end(); ++it) {
-		strm << " " << it->first << ":" << it->second;
-	}
-	return strm;
 }
 
 void multigram() {
