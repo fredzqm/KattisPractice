@@ -54,3 +54,5 @@ local.properties
 .scala_dependencies
 .worksheet
 bin/
+
+Debug
