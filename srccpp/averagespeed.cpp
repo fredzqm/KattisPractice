@@ -43,7 +43,7 @@ void averageSpeed() {
 	}
 }
 
-int main(int argc, char** argv) {
-	averageSpeed();
-}
+//int main(int argc, char** argv) {
+//	averageSpeed();
+//}
 
